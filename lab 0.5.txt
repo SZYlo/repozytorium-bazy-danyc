@@ -42,3 +42,13 @@ order by BIRTH_DATE LIMIT 5;
 select *
 select distinct first_name 
 from  company_2025.EMPLOYEE
+
+# ZADANIE 5
+
+select pensja
+round(pensja*0.75,2) as net
+round(pensja*0.25,2) as tax from EMPLOYEE;
+select * from CLIENT where TAX_IDENTIFIER is null;
+select SHORT_NAME from CLIENT 
+where FULL_NAME like "K%" or full_name like "%ski" order by SHORT_NAME desc;
+

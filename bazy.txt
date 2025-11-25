@@ -7,6 +7,9 @@ CREATE TABLE pracownik (
     data_urodzenia DATE NOT NULL
 );
 
+
+
+
 INSERT INTO pracownik (imie, nazwisko, data_urodzenia) VALUES
 ('Anna', 'Kowalska', '1990-05-15'),
 ('Piotr', 'Nowak', '1985-11-20'),
@@ -15,6 +18,9 @@ INSERT INTO pracownik (imie, nazwisko, data_urodzenia) VALUES
 UPDATE pracownik
 SET data_urodzenia = '1991-06-25'
 WHERE id_pracownika = 1;
+
+
+
 
 Zadanie 2
 
@@ -34,6 +40,9 @@ INSERT INTO zadanie (nazwa_zadania, pracownik, priorytet, opis) VALUES
 ('Przygotowanie raportu Q3', 1, 'wysoki', 'Raport wydajności za trzeci kwartał.'),
 ('Spotkanie z klientem X', 2, 'normalny', 'Ustalenie szczegółów nowego projektu.'),
 ('Szkolenie BHP', 3, 'niski', NULL);
+
+
+
 
 Zadanie 3
 
@@ -64,6 +73,9 @@ UPDATE zadanie
 SET projekt = 2
 WHERE id_zadania = 2;
 
+
+
+
 Zadanie 4
 
 CREATE TABLE sprint (
@@ -83,6 +95,9 @@ INSERT INTO sprint (numer_sprintu, data_rozpoczecia, data_zakonczenia) VALUES
 UPDATE zadanie
 SET sprint = 1
 WHERE id_zadania IN (1, 2);
+
+
+
 
 Zadanie 5
 

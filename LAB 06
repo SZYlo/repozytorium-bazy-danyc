@@ -1,0 +1,94 @@
+#--ZADANIE 1-- 
+#------A------
+
+SELECT AVG(salary) AS avg_salary
+FROM employees;
+
+#------B------
+
+SELECT 
+job_position_id,
+AVG(salary) AS avg_salary,
+COUNT(*) AS employee_count
+FROM employees
+GROUP BY job_position_id;
+
+#------C------
+
+SELECT department_id,
+AVG(YEAR(CURDATE()) - YEAR(birth_date)) AS avg_age
+FROM employees
+GROUP BY department_id;
+
+#--ZADANIE 2-- 
+#------A------
+
+SELECT department_id,
+SUM(salary) AS total_salary
+FROM employees
+GROUP BY department_id
+ORDER BY total_salary DESC;
+
+#------B------
+
+SELECT JOB_POSITION_ID, avg(pensja), count(*)
+FROM EMPLOYEE 
+GROUP BY JOB_POSITION_ID 
+having count(*) >= 3 and avg(pensja)> 3000;
+
+#------C------
+
+SELECT
+department_id,
+COUNT(DISTINCT salary) AS distinct_salaries
+FROM employees
+GROUP BY department_id
+HAVING COUNT(*) > 4
+ORDER BY distinct_salaries ASC;
+
+#--ZADANIE 3-- 
+#------A------
+
+CREATE TABLE department AS
+SELECT * FROM company_2025.department;
+
+CREATE TABLE job_position AS
+SELECT * FROM company_2025.job_position;
+
+#------B------
+
+SELECT d.department_name,COUNT(e.employee_id) AS employee_count
+FROM department d
+LEFT JOIN employee e ON d.department_id = e.department_id
+GROUP BY d.department_name;
+
+#------C------
+
+SELECT d.department_name,e.first_name,e.last_name
+FROM department d
+JOIN employee e ON d.department_id = e.department_id
+ORDER BY d.department_name, e.last_name, e.first_name;
+
+#--ZADANIE 4-- 
+#------A------
+
+SELECT e.last_name,j.job_position_name
+FROM employee e
+NATURAL JOIN job_position j
+WHERE YEAR(e.birth_date) BETWEEN 1990 AND 1999;
+
+#------B------
+
+SELECT e.first_name,e.last_name
+FROM employee e
+JOIN job_position j ON e.job_position_id = j.job_position_id
+WHERE j.job_position_name = 'Magazynier'
+ORDER BY e.birth_date DESC
+LIMIT 5;
+
+#------C------
+
+SELECT c1.client_name AS client_1,c2.client_name AS client_2
+FROM client c1
+JOIN client c2 ON c1.client_id = c2.client_id - 5
+ORDER BY c1.client_name;

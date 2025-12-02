@@ -92,3 +92,26 @@ SELECT c1.client_name AS client_1,c2.client_name AS client_2
 FROM client c1
 JOIN client c2 ON c1.client_id = c2.client_id - 5
 ORDER BY c1.client_name;
+
+#--ZADANIE 5-- 
+#------A------
+
+SELECT e.JOB_POSITION_ID,
+       AVG(e.SALARY) AS avg_salary,
+       COUNT(*) AS emp_count
+FROM EMPLOYEE e
+JOIN DEPARTMENT d ON e.DEPARTMENT_ID = d.DEPARTMENT_ID
+WHERE d.NAME NOT IN ('IT', 'HR')
+GROUP BY e.JOB_POSITION_ID
+HAVING COUNT(*) > 3;
+
+#------B------
+
+SELECT jp.JOB_NAME,
+       MIN(e.BIRTH_DATE) AS oldest,
+       MAX(e.BIRTH_DATE) AS youngest,
+       d.NAME AS department
+FROM EMPLOYEE e
+JOIN JOB_POSITION jp ON e.JOB_POSITION_ID = jp.JOB_POSITION_ID
+JOIN DEPARTMENT d ON e.DEPARTMENT_ID = d.DEPARTMENT_ID
+GROUP BY jp.JOB_NAME, d.NAME;

@@ -1,0 +1,89 @@
+#_____1____
+#_____A____
+
+ALTER TABLE zadanie DROP CONSTRAINT IF EXISTS fk_zadanie_pracownik;
+ALTER TABLE projekt DROP CONSTRAINT IF EXISTS fk_projekt_pracownik;
+
+#_____B____
+
+ALTER TABLE pracownik DROP CONSTRAINT pracownik_pkey;
+
+#_____C____
+
+ALTER TABLE pracownik 
+    ADD CONSTRAINT pracownik_pkey PRIMARY KEY (id_pracownika);
+
+#_____D____
+
+ALTER TABLE zadanie 
+ADD CONSTRAINT fk_zadanie_pracownik
+FOREIGN KEY (id_pracownika) REFERENCES pracownik(id_pracownika)
+ON DELETE SET NULL;
+
+#_____2____
+#_____A____
+
+ALTER TABLE zadanie 
+ADD COLUMN godziny_szacowane INTEGER DEFAULT 8;
+
+#_____B____
+
+UPDATE zadanie SET godziny_szacowane = 4 WHERE id_zadania = 1;
+UPDATE zadanie SET godziny_szacowane = 12 WHERE id_zadania = 2;
+UPDATE zadanie SET godziny_szacowane = 16 WHERE id_zadania = 3;
+
+#_____C____
+
+ALTER TABLE zadanie 
+    ALTER COLUMN godziny_szacowane SET DEFAULT 6;
+
+#_____D____
+
+INSERT INTO zadanie (nazwa, projekt, id_pracownika) 
+VALUES ('Testowe zadanie', NULL, NULL);
+SELECT * FROM zadanie WHERE nazwa = 'Testowe zadanie';
+
+#_____E____
+
+DELETE FROM zadanie WHERE nazwa = 'Testowe zadanie';
+
+#_____3____
+#_____A____
+
+ALTER TABLE projekt 
+    ADD COLUMN opis_projektu VARCHAR(50);
+
+#_____B____
+
+ALTER TABLE projekt 
+    ALTER COLUMN opis_projektu TYPE VARCHAR(200);
+#_____C____
+
+UPDATE projekt SET opis_projektu = 'MVP' WHERE id_projektu = 1;
+UPDATE projekt SET opis_projektu = 'pilne wdrożenie' WHERE id_projektu = 2;
+
+#_____D____
+
+ALTER TABLE projekt DROP COLUMN opis_projektu;
+
+#_____4____
+#_____A____
+
+ALTER TABLE zadanie DROP CONSTRAINT IF EXISTS fk_zadanie_projekt;
+
+#_____B____
+
+ALTER TABLE zadanie 
+    ADD CONSTRAINT fk_zadanie_projekt
+    FOREIGN KEY (projekt) REFERENCES projekt(id_projektu)
+    ON DELETE SET NULL;
+
+#_____C____
+
+DELETE FROM projekt WHERE id_projektu = 3;
+
+#_____D____
+
+SELECT id_zadania, projekt
+FROM zadanie
+WHERE projekt IS NULL;

@@ -130,6 +130,7 @@ SELECT CITY,
 FROM CLIENT_ADDRESS
 GROUP BY CITY;
 #______C_____
+
 SELECT TRIM(
          REGEXP_REPLACE(
              REGEXP_REPLACE(STREET, '^(ul\\.|al\\.)\\s*', ''), 

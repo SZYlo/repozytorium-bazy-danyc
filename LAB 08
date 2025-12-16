@@ -1,0 +1,142 @@
+#____zad1____
+#______A_____
+
+SELECT 
+k.nazwa_pelna,
+    a.ulica,
+    LENGTH(a.ulica) AS dlugosc_ulicy,
+    LEFT(a.ulica, 5) AS pierwsze_5_liter
+FROM klienci k
+JOIN adresy a ON a.klient_id = k.id;
+
+#______B_____
+
+SELECT 
+    k.nazwa_skrocona,
+    t.nazwa AS typ_adresu
+FROM klienci k
+LEFT JOIN adresy a ON a.klient_id = k.id
+LEFT JOIN typy_adresow t ON t.id = a.typ_adresu_id;
+
+#______C_____
+
+SELECT 
+    p.nazwa AS produkt,
+    k.nazwa AS kategoria,
+    LEFT(p.nazwa, 3) AS pierwsze_3_znaki
+FROM produkty p
+JOIN kategorie k ON k.id = p.kategoria_id;
+
+#______D_____
+
+#____zad2____
+#______A_____
+
+SELECT 
+    k.nazwa_pelna,
+    z.numer,
+    z.data_zamowienia,
+    DATEDIFF(CURDATE(), z.data_zamowienia) AS dni_od_zamowienia
+FROM zamowienia z
+JOIN klienci k ON k.id = z.klient_id;
+
+#______B_____
+
+SELECT 
+    z.numer,
+    z.data_zamowienia,
+    DATE_ADD(z.data_zamowienia, INTERVAL 14 DAY) AS termin_platnosci
+FROM zamowienia z
+WHERE z.status NOT IN ('Zwrocone', 'Zamkniete');
+
+#______C_____
+
+SELECT 
+    p.imie,
+    p.nazwisko,
+    p.data_zatrudnienia,
+    DAYNAME(p.data_zatrudnienia) AS dzien_tygodnia,
+    d.nazwa AS dzial
+FROM pracownicy p
+LEFT JOIN dzialy d ON d.id = p.dzial_id;
+
+#______D_____
+
+SELECT 
+    k.nazwa_pelna,
+    DATEDIFF(MAX(z.data_zamowienia), MIN(z.data_zamowienia)) AS roznica_dni
+FROM klienci k
+LEFT JOIN zamowienia z ON z.klient_id = k.id
+GROUP BY k.id;
+
+#____zad3____
+#______A_____
+
+SELECT 
+    k.nazwa_skrocona,
+    GROUP_CONCAT(a.ulica SEPARATOR ', ') AS adresy
+FROM klienci k
+LEFT JOIN adresy a ON a.klient_id = k.id
+GROUP BY k.id;
+
+#______B_____
+
+SELECT 
+    miasto,
+    GROUP_CONCAT(DISTINCT LEFT(kod_pocztowy, 2) SEPARATOR ', ') AS prefixy
+FROM adresy
+GROUP BY miasto;
+
+#______C_____
+
+SELECT 
+    CONCAT(p.nazwisko, ' ', p.imie) AS pracownik,
+    d.nazwa AS dzial,
+    DATEDIFF(CURDATE(), p.data_zatrudnienia) AS dni_od_zatrudnienia
+FROM pracownicy p
+LEFT JOIN dzialy d ON d.id = p.dzial_id;
+
+#______D_____
+
+SELECT 
+    CONCAT(k.nazwa_pelna, ' - ', k.nazwa_skrocona) AS klient,
+    GROUP_CONCAT(RIGHT(z.numer, 3) SEPARATOR ', ') AS numery
+FROM klienci k
+LEFT JOIN zamowienia z ON z.klient_id = k.id
+GROUP BY k.id;
+
+#______E_____
+
+SELECT 
+    CONCAT(
+        LOWER(LEFT(imie, 3)),
+        UPPER(RIGHT(nazwisko, 4)),
+        LENGTH(imie) +
+        LENGTH(YEAR(data_urodzenia)) +
+        LENGTH(MONTH(data_urodzenia)) +
+        LENGTH(DAY(data_urodzenia))
+    ) AS haslo
+FROM pracownicy;
+
+#____zad4____
+#______A_____
+
+SELECT 
+    DATE_FORMAT(z.data_sprzedazy, '%d-%m-%Y') AS dzien_miesiac_rok,
+    DATE_FORMAT(z.data_sprzedazy, '%Y-%u') AS rok_tydzien,
+    DATE_FORMAT(z.data_sprzedazy, '%Y-%j') AS rok_dzien_roku,
+    DATE_FORMAT(z.data_sprzedazy, '%M/%d/%Y') AS miesiac_dzien_rok
+FROM zamowienia z;
+
+#______B_____
+
+SELECT 
+    YEAR(z.data_sprzedazy) AS rok,
+    WEEK(z.data_sprzedazy, 1) AS tydzien,
+    SUM(pz.cena * pz.ilosc) AS wartosc
+FROM zamowienia z
+JOIN pozycje_zamowien pz ON pz.zamowienie_id = z.id
+WHERE YEAR(z.data_sprzedazy) = 2025
+GROUP BY tydzien
+ORDER BY wartosc DESC
+LIMIT 1;

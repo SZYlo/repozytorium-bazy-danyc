@@ -1,0 +1,107 @@
+#____zad1____
+
+SELECT
+    employee_id,
+    last_name,
+    salary,
+    RANK() OVER (ORDER BY salary DESC) AS salary_rank
+FROM employee;
+
+#____zad2____
+
+SELECT
+    employee_id,
+    last_name,
+    salary,
+    SUM(salary) OVER () AS total_salary
+FROM employee;
+
+#____zad4____
+
+SELECT
+    e.last_name,
+    p.name AS product_name,
+    op.price,
+    COUNT(*) OVER (
+        PARTITION BY p.product_id, o.order_date
+    ) AS transactions_per_day,
+    SUM(op.price * op.quantity) OVER (
+        PARTITION BY p.product_id, o.order_date
+    ) AS daily_product_sum,
+    LAG(op.price) OVER (
+        PARTITION BY p.product_id ORDER BY o.order_date
+    ) AS previous_price,
+    LEAD(op.price) OVER (
+        PARTITION BY p.product_id ORDER BY o.order_date
+    ) AS next_price
+FROM order_position op
+JOIN orders o ON op.order_id = o.order_id
+JOIN employee e ON o.employee_id = e.employee_id
+JOIN product p ON op.product_id = p.product_id;
+
+
+#____zad5____
+
+SELECT
+    p.name AS product_name,
+    op.price,
+    SUM(op.price * op.quantity) OVER (
+        PARTITION BY MONTH(o.order_date)
+    ) AS monthly_sum,
+    SUM(op.price * op.quantity) OVER (
+        PARTITION BY MONTH(o.order_date)
+        ORDER BY o.order_date
+    ) AS running_monthly_sum
+FROM order_position op
+JOIN orders o ON op.order_id = o.order_id
+JOIN product p ON op.product_id = p.product_id;
+
+#____zad7____
+
+SELECT
+    c.name AS category_name,
+    p.name AS product_name,
+    p.price,
+    MIN(p.price) OVER (PARTITION BY c.category_id) AS min_price,
+    MAX(p.price) OVER (PARTITION BY c.category_id) AS max_price,
+    MAX(p.price) OVER (PARTITION BY c.category_id)
+      - MIN(p.price) OVER (PARTITION BY c.category_id) AS price_difference
+FROM product p
+JOIN category c ON p.category_id = c.category_id;
+
+#____zad9____
+
+SELECT
+    p.name AS product_name,
+    c.name AS category_name,
+    RANK() OVER (
+        PARTITION BY c.category_id ORDER BY p.price
+    ) AS price_rank,
+    ROW_NUMBER() OVER (
+        PARTITION BY c.category_id ORDER BY p.price
+    ) AS row_number,
+    DENSE_RANK() OVER (
+        PARTITION BY c.category_id ORDER BY p.price
+    ) AS dense_price_rank
+FROM product p
+JOIN category c ON p.category_id = c.category_id;
+
+#____zad10___
+
+SELECT
+    e.last_name,
+    p.name AS product_name,
+    op.price * op.quantity AS sales_value,
+    SUM(op.price * op.quantity) OVER (
+        PARTITION BY e.employee_id
+        ORDER BY o.order_date
+    ) AS cumulative_employee_sales,
+    RANK() OVER (
+        PARTITION BY e.employee_id
+        ORDER BY op.price * op.quantity DESC
+    ) AS sales_rank_within_employee
+FROM order_position op
+JOIN orders o ON op.order_id = o.order_id
+JOIN employee e ON o.employee_id = e.employee_id
+JOIN product p ON op.product_id = p.product_id;
+

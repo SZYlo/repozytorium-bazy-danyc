@@ -1,0 +1,182 @@
+#____zad1____
+#______A_____
+
+CREATE TABLE ORDER_STATUS_HISTORY (
+    HISTORY_ID INT AUTO_INCREMENT PRIMARY KEY,
+    ORDER_NUMBER VARCHAR(50),
+    CHANGE_DATE DATETIME,
+    NEW_STATUS_NAME VARCHAR(100)
+);
+
+#______B_____
+
+DELIMITER $$
+
+CREATE TRIGGER trg_order_status_change
+AFTER UPDATE ON `ORDER`
+FOR EACH ROW
+BEGIN
+    IF OLD.STATUS_ID <> NEW.STATUS_ID THEN
+        INSERT INTO ORDER_STATUS_HISTORY (
+            ORDER_NUMBER,
+            CHANGE_DATE,
+            NEW_STATUS_NAME
+        )
+        SELECT 
+            NEW.ORDER_NUMBER,
+            NOW(),
+            s.NAME
+        FROM STATUS_NAME s
+        WHERE s.STATUS_ID = NEW.STATUS_ID;
+    END IF;
+END$$
+
+DELIMITER ;
+
+#______c_____
+
+#zmiana statusu zamówienia
+UPDATE `ORDER`
+SET STATUS_ID = 3
+WHERE ORDER_ID = 1;
+
+#sprawdzenie historii
+SELECT * FROM ORDER_STATUS_HISTORY;
+
+#____zad2____
+
+DELIMITER $$
+
+CREATE TRIGGER trg_check_inventory
+BEFORE INSERT ON ORDER_POSITION
+FOR EACH ROW
+BEGIN
+    DECLARE available INT;
+
+    SELECT AVAILABLE_QTY
+    INTO available
+    FROM INVENTORY
+    WHERE PRODUCT_ID = NEW.PRODUCT_ID;
+
+    IF available IS NULL OR available < NEW.QUANTITY THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Brak wystarczającej ilości produktu w magazynie';
+    END IF;
+END$$
+
+DELIMITER ;
+
+#______A_____
+#test
+
+INSERT INTO ORDER_POSITION (ORDER_ID, PRODUCT_ID, QUANTITY, PRICE)
+VALUES (1, 5, 1000, 50.00);
+
+#____zad3____
+
+DELIMITER $$
+
+CREATE PROCEDURE product_find_by_phrase(IN p_phrase VARCHAR(255))
+BEGIN
+    SELECT *
+    FROM PRODUCT
+    WHERE NAME LIKE CONCAT('%', p_phrase, '%')
+       OR DESCRIPTION LIKE CONCAT('%', p_phrase, '%');
+END$$
+
+DELIMITER ;
+
+
+#______A_____
+#wywolanie
+
+CALL product_find_by_phrase('laptop');
+
+#____zad4____
+
+DELIMITER $$
+
+CREATE FUNCTION income_for_month(p_year INT, p_month INT)
+RETURNS DECIMAL(10,2)
+DETERMINISTIC
+BEGIN
+    RETURN (
+        SELECT IFNULL(SUM(op.QUANTITY * op.PRICE), 0.00)
+        FROM `ORDER` o
+        JOIN ORDER_POSITION op ON o.ORDER_ID = op.ORDER_ID
+        JOIN STATUS_NAME s ON o.STATUS_ID = s.STATUS_ID
+        WHERE s.NAME = 'COMPLETED'
+          AND YEAR(o.ORDER_DATE) = p_year
+          AND MONTH(o.ORDER_DATE) = p_month
+    );
+END$$
+
+DELIMITER ;
+
+
+#______A_____
+#test
+
+SELECT income_for_month(2025, 1);
+
+#____zad5____
+#______A_____
+
+CREATE TABLE ORDER_ARCHIVE LIKE `ORDER`;
+CREATE TABLE ORDER_POSITION_ARCHIVE LIKE ORDER_POSITION;
+
+#USWAM KLUCZE OBCE JESLI ISTNIEJA 
+
+#______B_____
+
+DELIMITER $$
+
+CREATE PROCEDURE archive_order(IN p_order_id INT)
+BEGIN
+    DECLARE new_order_id INT;
+
+    START TRANSACTION;
+
+    INSERT INTO ORDER_ARCHIVE (ORDER_NUMBER, STATUS_ID, ORDER_DATE)
+    SELECT ORDER_NUMBER, STATUS_ID, ORDER_DATE
+    FROM `ORDER`
+    WHERE ORDER_ID = p_order_id;
+
+    SET new_order_id = LAST_INSERT_ID();
+
+    INSERT INTO ORDER_POSITION_ARCHIVE (ORDER_ID, PRODUCT_ID, QUANTITY, PRICE)
+    SELECT new_order_id, PRODUCT_ID, QUANTITY, PRICE
+    FROM ORDER_POSITION
+    WHERE ORDER_ID = p_order_id;
+
+    DELETE FROM ORDER_POSITION WHERE ORDER_ID = p_order_id;
+    DELETE FROM `ORDER` WHERE ORDER_ID = p_order_id;
+
+    COMMIT;
+END$$
+
+DELIMITER ;
+
+
+#______C_____
+
+DELIMITER $$
+
+CREATE TRIGGER trg_archive_order
+BEFORE DELETE ON `ORDER`
+FOR EACH ROW
+BEGIN
+    CALL archive_order(OLD.ORDER_ID);
+END$$
+
+DELIMITER ;
+
+#______D_____
+
+DELETE FROM `ORDER` WHERE ORDER_ID = 1;
+
+SELECT * FROM ORDER_ARCHIVE;
+SELECT * FROM ORDER_POSITION_ARCHIVE;
+
+
+
